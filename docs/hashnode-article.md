@@ -94,3 +94,5 @@ No Redis. No Postgres. No message queue. The entire backend is one process servi
 Go to [hookrelay.fly.dev](https://hookrelay.fly.dev), create an account (magic link, no password), and set up your first endpoint in 30 seconds.
 
 Then point a webhook at it and watch it arrive in real-time. That's it. That's the pitch.
+
+Source code is on [GitHub](https://github.com/ghost-workers/hookrelay).

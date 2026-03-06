@@ -243,4 +243,4 @@ Create an endpoint, point a webhook at it, and watch requests stream in. If you'
 
 ---
 
-*Built with Hono, React 19, better-sqlite3, and deployed on Fly.io. Questions about the architecture? Drop a comment.*
+*Built with Hono, React 19, better-sqlite3, and deployed on Fly.io. Source code on [GitHub](https://github.com/ghost-workers/hookrelay). Questions about the architecture? Drop a comment.*

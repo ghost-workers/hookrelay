@@ -23,7 +23,7 @@ Key features:
 
 Tech stack: Hono + better-sqlite3 backend, React 19 frontend, deployed on Fly.io.
 
-Live at https://hookrelay.fly.dev
+Live at https://hookrelay.fly.dev | GitHub: https://github.com/ghost-workers/hookrelay
 
 Would love feedback on the UX and what features you'd want next.
 
@@ -45,6 +45,7 @@ Point any webhook provider — Stripe, GitHub, Shopify, Twilio — at your HookR
 - Forward webhooks to localhost (no tunnel needed)
 - Signature verification for Stripe, GitHub, and more
 - Team sharing and collaboration
+- Open-source on GitHub
 
 **Maker Comment:**
 
@@ -70,7 +71,7 @@ We built HookRelay to fix this. It gives you a URL that captures any incoming HT
 
 Free tier: 1 endpoint, 100 captures/day. No credit card required.
 
-https://hookrelay.fly.dev
+https://hookrelay.fly.dev | Source on GitHub: https://github.com/ghost-workers/hookrelay
 
 Happy to answer questions about the stack (Hono + React 19 + SQLite on Fly.io).
 
@@ -88,7 +89,7 @@ The solution: Point webhooks at a HookRelay URL. See every request live. Replay 
 
 Stack: Hono (Node.js), React 19, SQLite, SSE for real-time, deployed on Fly.io.
 
-Free tier available. Feedback welcome: https://hookrelay.fly.dev
+Free tier available. Feedback welcome: https://hookrelay.fly.dev | GitHub: https://github.com/ghost-workers/hookrelay
 
 ### r/devtools
 
@@ -105,7 +106,7 @@ Features:
 - Forward to localhost without tunnels
 - Free tier for solo devs
 
-Check it out: https://hookrelay.fly.dev
+Check it out: https://hookrelay.fly.dev | Source: https://github.com/ghost-workers/hookrelay
 
 ---
 
