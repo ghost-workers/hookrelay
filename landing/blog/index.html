@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog — HookRelay</title>
+  <meta name="description" content="Guides and tutorials on webhook debugging, testing, and development. Learn best practices for building reliable webhook integrations.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://hookrelay.fly.dev/landing/blog/">
+  <meta property="og:title" content="HookRelay Blog — Webhook Debugging Guides">
+  <meta property="og:description" content="Guides and tutorials on webhook debugging, testing, and development.">
+  <meta property="og:site_name" content="HookRelay">
+  <link rel="canonical" href="https://hookrelay.fly.dev/landing/blog/">
+  <meta name="robots" content="index, follow">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <style>
+    :root {
+      --bg: #0a0a0f; --surface: #12121a; --border: #1e1e2e; --text: #e4e4ef;
+      --text-muted: #8888a0; --accent: #6c5ce7; --accent-light: #a29bfe;
+      --green: #00cec9; --radius: 12px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg); color: var(--text); line-height: 1.6; -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--accent-light); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    nav { padding: 20px 0; border-bottom: 1px solid var(--border); }
+    nav .container { display: flex; justify-content: space-between; align-items: center; max-width: 1100px; }
+    .logo { font-size: 1.25rem; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
+    .logo span { color: var(--accent-light); }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-links a { color: var(--text-muted); font-size: 0.9rem; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+    .btn-nav { background: var(--accent); color: #fff; padding: 8px 20px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; }
+    .btn-nav:hover { background: #5b4bd5; text-decoration: none; }
+    .container { max-width: 780px; margin: 0 auto; padding: 0 24px; }
+    .page-header { padding: 80px 0 48px; text-align: center; }
+    .page-header h1 {
+      font-size: 2.5rem; margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--text), var(--accent-light));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .page-header p { font-size: 1.15rem; color: var(--text-muted); }
+    .post-list { padding-bottom: 80px; }
+    .post-card {
+      display: block; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 32px; margin-bottom: 20px; transition: border-color 0.2s;
+    }
+    .post-card:hover { border-color: var(--accent); text-decoration: none; }
+    .post-card h2 { font-size: 1.4rem; margin-bottom: 8px; color: var(--text); }
+    .post-card p { color: var(--text-muted); font-size: 1rem; margin: 0; }
+    .post-card .tag { display: inline-block; font-size: 0.75rem; background: var(--border); color: var(--text-muted); padding: 4px 10px; border-radius: 20px; margin-top: 12px; }
+    footer { border-top: 1px solid var(--border); padding: 40px 0; text-align: center; color: var(--text-muted); font-size: 0.85rem; }
+    @media (max-width: 640px) { .page-header h1 { font-size: 1.8rem; } .page-header { padding: 48px 0 32px; } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container" style="max-width:1100px;">
+    <a href="/landing" class="logo"><span>&#9889;</span> HookRelay</a>
+    <div class="nav-links">
+      <a href="/landing">Home</a>
+      <a href="/landing#pricing">Pricing</a>
+      <a href="/auth/login" class="btn-nav">Get Started Free</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-header">
+  <div class="container">
+    <h1>HookRelay Blog</h1>
+    <p>Guides, tutorials, and best practices for webhook development.</p>
+  </div>
+</header>
+
+<section class="post-list">
+  <div class="container">
+
+    <a href="/landing/blog/webhook-debugging-guide.html" class="post-card">
+      <h2>How to Debug Webhooks: A Complete Guide</h2>
+      <p>Everything you need to know about inspecting, testing, and troubleshooting webhook integrations in development and production.</p>
+      <span class="tag">Guide</span>
+    </a>
+
+    <a href="/landing/blog/test-webhooks-locally.html" class="post-card">
+      <h2>How to Test Webhooks Locally Without ngrok</h2>
+      <p>Receive, inspect, and replay webhooks on localhost using a permanent URL. No tunnels, no random URLs, no hassle.</p>
+      <span class="tag">Tutorial</span>
+    </a>
+
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>&copy; 2026 HookRelay. <a href="/landing">Home</a> &middot; <a href="/landing#pricing">Pricing</a> &middot; <a href="/auth/login">Sign In</a></p>
+  </div>
+</footer>
+
+</body>
+</html>

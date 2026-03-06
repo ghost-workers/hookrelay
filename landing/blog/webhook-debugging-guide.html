@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How to Debug Webhooks: A Complete Guide (2026) — HookRelay</title>
+  <meta name="description" content="Learn how to debug webhooks step by step. Inspect payloads, verify signatures, replay failed deliveries, and test webhooks locally without ngrok.">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://hookrelay.fly.dev/landing/blog/webhook-debugging-guide.html">
+  <meta property="og:title" content="How to Debug Webhooks: A Complete Guide (2026)">
+  <meta property="og:description" content="Learn how to debug webhooks step by step. Inspect payloads, verify signatures, replay failed deliveries, and test webhooks locally.">
+  <meta property="og:site_name" content="HookRelay">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="How to Debug Webhooks: A Complete Guide (2026)">
+  <meta name="twitter:description" content="Learn how to debug webhooks step by step. Inspect payloads, verify signatures, replay failed deliveries, and test webhooks locally.">
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https://hookrelay.fly.dev/landing/blog/webhook-debugging-guide.html">
+
+  <!-- SEO -->
+  <meta name="robots" content="index, follow">
+  <meta name="author" content="HookRelay">
+  <meta name="keywords" content="debug webhooks, webhook testing, webhook debugging tool, test webhooks locally, webhook relay, inspect webhook payload, webhook signature verification, webhook troubleshooting">
+
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "How to Debug Webhooks: A Complete Guide",
+    "description": "Learn how to debug webhooks step by step. Inspect payloads, verify signatures, replay failed deliveries, and test webhooks locally.",
+    "author": { "@type": "Organization", "name": "HookRelay" },
+    "publisher": { "@type": "Organization", "name": "HookRelay" },
+    "mainEntityOfPage": "https://hookrelay.fly.dev/landing/blog/webhook-debugging-guide.html"
+  }
+  </script>
+
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --border: #1e1e2e;
+      --text: #e4e4ef;
+      --text-muted: #8888a0;
+      --accent: #6c5ce7;
+      --accent-light: #a29bfe;
+      --green: #00cec9;
+      --orange: #fdcb6e;
+      --radius: 12px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.8;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--accent-light); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Nav */
+    nav {
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    nav .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .logo span { color: var(--accent-light); }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-links a { color: var(--text-muted); font-size: 0.9rem; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+    .btn-nav {
+      background: var(--accent);
+      color: #fff;
+      padding: 8px 20px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    .btn-nav:hover { background: #5b4bd5; text-decoration: none; }
+
+    .container {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Article */
+    .article-header {
+      padding: 80px 0 40px;
+      text-align: center;
+    }
+    .article-header .breadcrumb {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+    .article-header h1 {
+      font-size: 2.5rem;
+      line-height: 1.2;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--text), var(--accent-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .article-header .subtitle {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .article-body {
+      padding: 40px 0 80px;
+    }
+    .article-body h2 {
+      font-size: 1.6rem;
+      margin: 48px 0 16px;
+      color: var(--text);
+    }
+    .article-body h3 {
+      font-size: 1.2rem;
+      margin: 32px 0 12px;
+      color: var(--accent-light);
+    }
+    .article-body p {
+      margin-bottom: 16px;
+      color: var(--text);
+      font-size: 1.05rem;
+    }
+    .article-body ul, .article-body ol {
+      margin: 0 0 16px 24px;
+      color: var(--text);
+    }
+    .article-body li {
+      margin-bottom: 8px;
+    }
+
+    pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      overflow-x: auto;
+      margin: 16px 0 24px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: var(--green);
+    }
+    code {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      background: var(--surface);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.9em;
+      color: var(--green);
+    }
+    pre code {
+      background: none;
+      padding: 0;
+    }
+
+    .callout {
+      background: var(--surface);
+      border-left: 3px solid var(--accent);
+      padding: 20px 24px;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      margin: 24px 0;
+    }
+    .callout p { margin-bottom: 0; }
+    .callout strong { color: var(--accent-light); }
+
+    .cta-box {
+      background: linear-gradient(135deg, var(--surface), #1a1a2e);
+      border: 1px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 40px;
+      text-align: center;
+      margin: 48px 0;
+    }
+    .cta-box h3 {
+      color: var(--text);
+      font-size: 1.4rem;
+      margin-bottom: 12px;
+    }
+    .cta-box p {
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+    .btn-cta {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      padding: 14px 36px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    .btn-cta:hover { background: #5b4bd5; text-decoration: none; }
+
+    /* TOC */
+    .toc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      margin-bottom: 40px;
+    }
+    .toc h4 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+    .toc ol {
+      margin: 0;
+      padding-left: 20px;
+    }
+    .toc li {
+      margin-bottom: 6px;
+      font-size: 0.95rem;
+    }
+    .toc a { color: var(--accent-light); }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 0;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 640px) {
+      .article-header h1 { font-size: 1.8rem; }
+      .article-header { padding: 48px 0 24px; }
+      .cta-box { padding: 28px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container" style="max-width:1100px;">
+    <a href="/landing" class="logo"><span>&#9889;</span> HookRelay</a>
+    <div class="nav-links">
+      <a href="/landing">Home</a>
+      <a href="/landing#pricing">Pricing</a>
+      <a href="/auth/login" class="btn-nav">Get Started Free</a>
+    </div>
+  </div>
+</nav>
+
+<header class="article-header">
+  <div class="container">
+    <div class="breadcrumb"><a href="/landing">HookRelay</a> &rarr; Blog</div>
+    <h1>How to Debug Webhooks: A Complete Guide</h1>
+    <p class="subtitle">Everything you need to know about inspecting, testing, and troubleshooting webhook integrations in development and production.</p>
+  </div>
+</header>
+
+<article class="article-body">
+  <div class="container">
+
+    <div class="toc">
+      <h4>Table of Contents</h4>
+      <ol>
+        <li><a href="#what-are-webhooks">What Are Webhooks?</a></li>
+        <li><a href="#why-debugging-is-hard">Why Webhook Debugging Is Hard</a></li>
+        <li><a href="#common-problems">Common Webhook Problems</a></li>
+        <li><a href="#debugging-techniques">Debugging Techniques</a></li>
+        <li><a href="#testing-locally">Testing Webhooks Locally</a></li>
+        <li><a href="#signature-verification">Signature Verification</a></li>
+        <li><a href="#replaying-webhooks">Replaying Failed Webhooks</a></li>
+        <li><a href="#production-monitoring">Production Monitoring</a></li>
+        <li><a href="#tools">Webhook Debugging Tools</a></li>
+      </ol>
+    </div>
+
+    <h2 id="what-are-webhooks">What Are Webhooks?</h2>
+    <p>Webhooks are HTTP callbacks &mdash; automated POST requests sent from one service to another when an event occurs. Instead of polling an API repeatedly to check for updates, you register a URL and the service pushes data to you in real time.</p>
+    <p>Common examples include:</p>
+    <ul>
+      <li><strong>Stripe</strong> sending payment confirmation after a successful charge</li>
+      <li><strong>GitHub</strong> notifying your CI/CD pipeline when code is pushed</li>
+      <li><strong>Shopify</strong> alerting your warehouse system when an order is placed</li>
+      <li><strong>Twilio</strong> forwarding incoming SMS messages to your application</li>
+    </ul>
+    <p>Webhooks are the backbone of modern event-driven architectures. But they come with a unique debugging challenge: you don't control the sender.</p>
+
+    <h2 id="why-debugging-is-hard">Why Webhook Debugging Is Hard</h2>
+    <p>Unlike regular API calls where you control both the request and response, webhooks present several challenges:</p>
+    <ul>
+      <li><strong>You can't see the request easily.</strong> The webhook hits your server, but if something goes wrong, you may never see the payload that was sent.</li>
+      <li><strong>You can't replay on demand.</strong> Most providers send the webhook once (with retries on failure). If you missed it or your handler crashed, you have to trigger the event again.</li>
+      <li><strong>Local development is painful.</strong> Webhooks require a publicly accessible URL. Your <code>localhost:3000</code> won't work.</li>
+      <li><strong>Timing issues.</strong> Webhooks are asynchronous. The event might arrive before your system is ready to handle it, or arrive out of order.</li>
+      <li><strong>Signature verification is tricky.</strong> Most providers sign their payloads with HMAC. Getting the verification right requires exact byte-for-byte payload matching.</li>
+    </ul>
+
+    <h2 id="common-problems">Common Webhook Problems</h2>
+
+    <h3>1. Endpoint Returns 500</h3>
+    <p>The most common issue. Your handler throws an exception, the provider sees a 500, and retries the webhook. If the error persists, the provider eventually gives up and your data is lost.</p>
+    <pre><code>// Common mistake: not handling missing fields
+app.post('/webhook', (req, res) => {
+  const email = req.body.data.customer.email; // TypeError if nested object is null
+  // ...
+});</code></pre>
+
+    <h3>2. Wrong Content-Type Handling</h3>
+    <p>Some providers send <code>application/json</code>, others send <code>application/x-www-form-urlencoded</code>. If your server only parses one format, you'll get empty or malformed data.</p>
+
+    <h3>3. Signature Verification Failures</h3>
+    <p>You compute the HMAC but it doesn't match. Common causes:</p>
+    <ul>
+      <li>Using the parsed JSON body instead of the raw request body</li>
+      <li>Wrong encoding (UTF-8 vs. Latin-1)</li>
+      <li>Using the wrong secret (test mode vs. live mode)</li>
+      <li>Body parser middleware modifying the raw payload before your verification runs</li>
+    </ul>
+
+    <h3>4. Duplicate Event Processing</h3>
+    <p>Providers retry on timeout or 5xx responses. If your handler isn't idempotent, you'll process the same event twice &mdash; double-charging customers, sending duplicate emails, or creating duplicate records.</p>
+
+    <h3>5. Timeout</h3>
+    <p>Most providers expect a response within 5-30 seconds. If your handler does heavy processing synchronously, it'll timeout. The provider sees this as a failure and retries.</p>
+
+    <h2 id="debugging-techniques">Debugging Techniques</h2>
+
+    <h3>Inspect the Raw Payload</h3>
+    <p>The first step in any webhook debugging session: capture and inspect the exact payload. Don't rely on documentation alone &mdash; providers change their payloads, and edge cases are rarely documented.</p>
+    <pre><code>// Quick debug endpoint to log the raw webhook
+app.post('/webhook', (req, res) => {
+  console.log('Headers:', JSON.stringify(req.headers, null, 2));
+  console.log('Body:', JSON.stringify(req.body, null, 2));
+  res.status(200).send('OK');
+});</code></pre>
+
+    <div class="callout">
+      <p><strong>Better approach:</strong> Use a webhook inspection tool like <a href="/landing">HookRelay</a> to capture, display, and search through webhook payloads without modifying your code. You get a unique URL that captures every request, showing headers, body, query params, and timing.</p>
+    </div>
+
+    <h3>Check Provider Logs</h3>
+    <p>Most webhook providers have delivery logs in their dashboard:</p>
+    <ul>
+      <li><strong>Stripe:</strong> Dashboard &rarr; Developers &rarr; Webhooks &rarr; select endpoint &rarr; see attempts</li>
+      <li><strong>GitHub:</strong> Settings &rarr; Webhooks &rarr; Recent Deliveries</li>
+      <li><strong>Shopify:</strong> Settings &rarr; Notifications &rarr; Webhooks</li>
+    </ul>
+    <p>These logs show the exact payload sent, the response your server returned, and the HTTP status code.</p>
+
+    <h3>Verify Your Endpoint Is Accessible</h3>
+    <p>Before debugging your handler logic, confirm the provider can reach your endpoint:</p>
+    <pre><code># Test your endpoint is accessible from the internet
+curl -X POST https://your-domain.com/webhook \
+  -H "Content-Type: application/json" \
+  -d '{"test": true}'</code></pre>
+
+    <h2 id="testing-locally">Testing Webhooks Locally</h2>
+    <p>The classic challenge: webhooks need a public URL, but you're developing on localhost. Here are your options:</p>
+
+    <h3>Option 1: Tunnel Tools (ngrok, Cloudflare Tunnel)</h3>
+    <p>These create a public URL that forwards to your local machine:</p>
+    <pre><code># Using ngrok
+ngrok http 3000
+# Gives you: https://abc123.ngrok.io -> localhost:3000</code></pre>
+    <p>Drawbacks: free tiers have rate limits, URLs change on restart, and you need to update the provider's webhook URL every time.</p>
+
+    <h3>Option 2: Webhook Relay Service</h3>
+    <p>Services like HookRelay give you a permanent endpoint URL. Webhooks are captured in the cloud and can be forwarded to your local machine, replayed on demand, or inspected in a web UI.</p>
+    <pre><code># With HookRelay:
+# 1. Create an endpoint (one-time setup)
+# 2. Point your provider's webhook URL to your HookRelay endpoint
+# 3. Webhooks are captured and visible in the dashboard
+# 4. Forward to localhost when you're developing
+# 5. Replay any captured webhook with one click</code></pre>
+
+    <div class="callout">
+      <p><strong>Key advantage:</strong> Your webhook URL never changes. When you're not developing, webhooks are still captured. When you come back, you can replay them against your updated code.</p>
+    </div>
+
+    <h3>Option 3: Mock the Provider</h3>
+    <p>Write a script that sends test webhook payloads to your local endpoint:</p>
+    <pre><code># Send a test Stripe webhook event
+curl -X POST http://localhost:3000/webhook \
+  -H "Content-Type: application/json" \
+  -H "Stripe-Signature: t=123,v1=abc..." \
+  -d '{
+    "type": "checkout.session.completed",
+    "data": {
+      "object": {
+        "id": "cs_test_123",
+        "customer_email": "test@example.com"
+      }
+    }
+  }'</code></pre>
+    <p>This works for basic testing but doesn't verify signature validation or handle edge cases in real payloads.</p>
+
+    <h2 id="signature-verification">Signature Verification</h2>
+    <p>Most webhook providers sign payloads using HMAC-SHA256. Here's how to verify signatures correctly:</p>
+
+    <h3>Stripe Signature Verification</h3>
+    <pre><code>import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+app.post('/webhook', express.raw({type: 'application/json'}), (req, res) => {
+  const sig = req.headers['stripe-signature'];
+
+  try {
+    // IMPORTANT: use req.body (raw buffer), not parsed JSON
+    const event = stripe.webhooks.constructEvent(
+      req.body,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+
+    // Handle the event
+    switch (event.type) {
+      case 'checkout.session.completed':
+        // Fulfill the purchase
+        break;
+    }
+
+    res.json({ received: true });
+  } catch (err) {
+    console.error('Signature verification failed:', err.message);
+    res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+});</code></pre>
+
+    <h3>Generic HMAC Verification</h3>
+    <pre><code>import crypto from 'crypto';
+
+function verifyWebhookSignature(payload, signature, secret) {
+  const computed = crypto
+    .createHmac('sha256', secret)
+    .update(payload, 'utf8')  // Use the RAW body string
+    .digest('hex');
+
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(computed)
+  );
+}</code></pre>
+
+    <div class="callout">
+      <p><strong>Critical:</strong> Always use <code>crypto.timingSafeEqual()</code> instead of <code>===</code> for signature comparison. String equality is vulnerable to timing attacks that can leak the expected signature byte by byte.</p>
+    </div>
+
+    <h2 id="replaying-webhooks">Replaying Failed Webhooks</h2>
+    <p>When a webhook fails, you need to reprocess it. Some approaches:</p>
+    <ul>
+      <li><strong>Provider retry:</strong> Most providers retry automatically (Stripe retries for up to 3 days). But you can't control the timing.</li>
+      <li><strong>Manual replay:</strong> Use provider dashboards to resend specific events. Stripe and GitHub both support this.</li>
+      <li><strong>Capture and replay:</strong> Tools like HookRelay store every webhook payload. You can replay any historical webhook with one click, as many times as you need.</li>
+    </ul>
+    <p>The capture-and-replay approach is particularly valuable during development: trigger the webhook once from the provider, then replay it dozens of times as you iterate on your handler.</p>
+
+    <h2 id="production-monitoring">Production Monitoring</h2>
+    <p>Debugging in production is different from development. You need visibility without disrupting the live system:</p>
+    <ul>
+      <li><strong>Log every webhook</strong> &mdash; at minimum, log the event type, a unique identifier, and the processing result</li>
+      <li><strong>Track processing time</strong> &mdash; slow handlers lead to timeouts and retries</li>
+      <li><strong>Monitor failure rates</strong> &mdash; a sudden spike in 4xx/5xx responses means something is wrong</li>
+      <li><strong>Implement idempotency</strong> &mdash; store processed event IDs and skip duplicates</li>
+      <li><strong>Use a dead letter queue</strong> &mdash; events that fail repeatedly should be captured for manual review</li>
+    </ul>
+
+    <pre><code>// Idempotent webhook handler
+app.post('/webhook', async (req, res) => {
+  const eventId = req.body.id;
+
+  // Check if already processed
+  const existing = await db.get(
+    'SELECT id FROM processed_events WHERE event_id = ?',
+    eventId
+  );
+  if (existing) {
+    return res.status(200).json({ status: 'already_processed' });
+  }
+
+  // Process the event
+  await handleEvent(req.body);
+
+  // Mark as processed
+  await db.run(
+    'INSERT INTO processed_events (event_id) VALUES (?)',
+    eventId
+  );
+
+  res.status(200).json({ status: 'processed' });
+});</code></pre>
+
+    <h2 id="tools">Webhook Debugging Tools</h2>
+    <p>Here's a comparison of popular approaches:</p>
+
+    <div style="overflow-x: auto; margin: 24px 0;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+        <thead>
+          <tr style="border-bottom: 2px solid var(--border);">
+            <th style="text-align: left; padding: 12px; color: var(--text-muted);">Tool</th>
+            <th style="text-align: left; padding: 12px; color: var(--text-muted);">Inspect</th>
+            <th style="text-align: left; padding: 12px; color: var(--text-muted);">Replay</th>
+            <th style="text-align: left; padding: 12px; color: var(--text-muted);">Local Forward</th>
+            <th style="text-align: left; padding: 12px; color: var(--text-muted);">Persistent URL</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: 12px; font-weight: 600; color: var(--accent-light);">HookRelay</td>
+            <td style="padding: 12px;">Yes</td>
+            <td style="padding: 12px;">Yes</td>
+            <td style="padding: 12px;">Yes</td>
+            <td style="padding: 12px;">Yes</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: 12px;">ngrok</td>
+            <td style="padding: 12px;">Basic</td>
+            <td style="padding: 12px;">Paid only</td>
+            <td style="padding: 12px;">Yes</td>
+            <td style="padding: 12px;">Paid only</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: 12px;">RequestBin</td>
+            <td style="padding: 12px;">Yes</td>
+            <td style="padding: 12px;">No</td>
+            <td style="padding: 12px;">No</td>
+            <td style="padding: 12px;">No</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: 12px;">Console.log</td>
+            <td style="padding: 12px;">Basic</td>
+            <td style="padding: 12px;">No</td>
+            <td style="padding: 12px;">N/A</td>
+            <td style="padding: 12px;">N/A</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="cta-box">
+      <h3>Stop guessing. Start seeing your webhooks.</h3>
+      <p>HookRelay captures every webhook in real time. Inspect payloads, replay failed deliveries, and forward to localhost &mdash; all from one dashboard.</p>
+      <a href="/auth/login" class="btn-cta">Get Started Free</a>
+    </div>
+
+    <h2>Summary</h2>
+    <p>Webhook debugging doesn't have to be painful. Here's the checklist:</p>
+    <ol>
+      <li><strong>Capture the raw payload</strong> &mdash; don't rely on documentation alone</li>
+      <li><strong>Verify signatures correctly</strong> &mdash; use the raw body, not parsed JSON</li>
+      <li><strong>Make handlers idempotent</strong> &mdash; always check for duplicate event IDs</li>
+      <li><strong>Respond quickly</strong> &mdash; do heavy processing asynchronously</li>
+      <li><strong>Use proper tooling</strong> &mdash; a webhook inspection tool saves hours of guesswork</li>
+      <li><strong>Monitor in production</strong> &mdash; track failure rates and processing times</li>
+    </ol>
+    <p>Whether you're integrating Stripe payments, GitHub CI/CD, or any other webhook-based service, having visibility into what's being sent to your endpoint is the difference between hours of frustration and minutes of productive debugging.</p>
+
+  </div>
+</article>
+
+<footer>
+  <div class="container">
+    <p>&copy; 2026 HookRelay. <a href="/landing">Home</a> &middot; <a href="/landing#pricing">Pricing</a> &middot; <a href="/auth/login">Sign In</a></p>
+  </div>
+</footer>
+
+</body>
+</html>

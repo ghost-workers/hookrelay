@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How to Test Webhooks Locally Without ngrok — HookRelay</title>
+  <meta name="description" content="Test webhooks on localhost without ngrok. Capture, inspect, and forward webhook payloads to your local development server with a permanent URL.">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://hookrelay.fly.dev/landing/blog/test-webhooks-locally.html">
+  <meta property="og:title" content="How to Test Webhooks Locally Without ngrok">
+  <meta property="og:description" content="Test webhooks on localhost without ngrok. Capture, inspect, and forward webhook payloads to your local dev server.">
+  <meta property="og:site_name" content="HookRelay">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="How to Test Webhooks Locally Without ngrok">
+  <meta name="twitter:description" content="Test webhooks on localhost without ngrok. Capture, inspect, and forward webhook payloads to your local dev server.">
+
+  <link rel="canonical" href="https://hookrelay.fly.dev/landing/blog/test-webhooks-locally.html">
+  <meta name="robots" content="index, follow">
+  <meta name="author" content="HookRelay">
+  <meta name="keywords" content="test webhooks locally, webhook localhost, ngrok alternative, webhook forwarding, local webhook testing, webhook development, receive webhooks localhost">
+
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "How to Test Webhooks Locally Without ngrok",
+    "description": "Test webhooks on localhost without ngrok. Capture, inspect, and forward webhook payloads to your local development server.",
+    "author": { "@type": "Organization", "name": "HookRelay" },
+    "publisher": { "@type": "Organization", "name": "HookRelay" },
+    "mainEntityOfPage": "https://hookrelay.fly.dev/landing/blog/test-webhooks-locally.html"
+  }
+  </script>
+
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --border: #1e1e2e;
+      --text: #e4e4ef;
+      --text-muted: #8888a0;
+      --accent: #6c5ce7;
+      --accent-light: #a29bfe;
+      --green: #00cec9;
+      --orange: #fdcb6e;
+      --radius: 12px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg); color: var(--text); line-height: 1.8;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--accent-light); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    nav { padding: 20px 0; border-bottom: 1px solid var(--border); }
+    nav .container { display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 1.25rem; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
+    .logo span { color: var(--accent-light); }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-links a { color: var(--text-muted); font-size: 0.9rem; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+    .btn-nav { background: var(--accent); color: #fff; padding: 8px 20px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; }
+    .btn-nav:hover { background: #5b4bd5; text-decoration: none; }
+    .container { max-width: 780px; margin: 0 auto; padding: 0 24px; }
+    .article-header { padding: 80px 0 40px; text-align: center; }
+    .article-header .breadcrumb { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 24px; }
+    .article-header h1 {
+      font-size: 2.5rem; line-height: 1.2; margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--text), var(--accent-light));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .article-header .subtitle { font-size: 1.15rem; color: var(--text-muted); max-width: 600px; margin: 0 auto; }
+    .article-body { padding: 40px 0 80px; }
+    .article-body h2 { font-size: 1.6rem; margin: 48px 0 16px; color: var(--text); }
+    .article-body h3 { font-size: 1.2rem; margin: 32px 0 12px; color: var(--accent-light); }
+    .article-body p { margin-bottom: 16px; color: var(--text); font-size: 1.05rem; }
+    .article-body ul, .article-body ol { margin: 0 0 16px 24px; color: var(--text); }
+    .article-body li { margin-bottom: 8px; }
+    pre {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 20px; overflow-x: auto; margin: 16px 0 24px;
+      font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.9rem; line-height: 1.6; color: var(--green);
+    }
+    code { font-family: 'SF Mono', 'Fira Code', monospace; background: var(--surface); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; color: var(--green); }
+    pre code { background: none; padding: 0; }
+    .callout { background: var(--surface); border-left: 3px solid var(--accent); padding: 20px 24px; border-radius: 0 var(--radius) var(--radius) 0; margin: 24px 0; }
+    .callout p { margin-bottom: 0; }
+    .callout strong { color: var(--accent-light); }
+    .cta-box {
+      background: linear-gradient(135deg, var(--surface), #1a1a2e); border: 1px solid var(--accent);
+      border-radius: var(--radius); padding: 40px; text-align: center; margin: 48px 0;
+    }
+    .cta-box h3 { color: var(--text); font-size: 1.4rem; margin-bottom: 12px; }
+    .cta-box p { color: var(--text-muted); margin-bottom: 20px; }
+    .btn-cta { display: inline-block; background: var(--accent); color: #fff; padding: 14px 36px; border-radius: 8px; font-size: 1rem; font-weight: 600; }
+    .btn-cta:hover { background: #5b4bd5; text-decoration: none; }
+    .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 24px 0; }
+    .comparison-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+    .comparison-card h4 { margin-bottom: 12px; font-size: 1.1rem; }
+    .comparison-card.highlight { border-color: var(--accent); }
+    .comparison-card ul { margin: 0; padding-left: 20px; }
+    .comparison-card li { margin-bottom: 6px; font-size: 0.95rem; }
+    .pro { color: var(--green); }
+    .con { color: var(--orange); }
+    footer { border-top: 1px solid var(--border); padding: 40px 0; text-align: center; color: var(--text-muted); font-size: 0.85rem; }
+    @media (max-width: 640px) {
+      .article-header h1 { font-size: 1.8rem; }
+      .article-header { padding: 48px 0 24px; }
+      .comparison { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container" style="max-width:1100px;">
+    <a href="/landing" class="logo"><span>&#9889;</span> HookRelay</a>
+    <div class="nav-links">
+      <a href="/landing">Home</a>
+      <a href="/landing#pricing">Pricing</a>
+      <a href="/auth/login" class="btn-nav">Get Started Free</a>
+    </div>
+  </div>
+</nav>
+
+<header class="article-header">
+  <div class="container">
+    <div class="breadcrumb"><a href="/landing">HookRelay</a> &rarr; Blog</div>
+    <h1>How to Test Webhooks Locally Without ngrok</h1>
+    <p class="subtitle">Receive, inspect, and replay webhooks on localhost using a permanent URL. No tunnels, no random URLs, no hassle.</p>
+  </div>
+</header>
+
+<article class="article-body">
+  <div class="container">
+
+    <h2>The Problem with Local Webhook Development</h2>
+    <p>You're building a Stripe integration. You write your webhook handler, start your local server on <code>localhost:3000</code>, and&hellip; now what? Stripe can't reach your machine. You need a public URL.</p>
+    <p>The traditional solutions all have drawbacks:</p>
+
+    <div class="comparison">
+      <div class="comparison-card">
+        <h4>ngrok / Tunnels</h4>
+        <ul>
+          <li class="pro">+ Quick to set up</li>
+          <li class="pro">+ Works immediately</li>
+          <li class="con">- URL changes every restart (free tier)</li>
+          <li class="con">- Must update provider webhook URL each time</li>
+          <li class="con">- Doesn't capture when tunnel is down</li>
+          <li class="con">- No replay capability</li>
+        </ul>
+      </div>
+      <div class="comparison-card highlight">
+        <h4>Webhook Relay (HookRelay)</h4>
+        <ul>
+          <li class="pro">+ Permanent URL &mdash; set once, never change</li>
+          <li class="pro">+ Captures webhooks even when offline</li>
+          <li class="pro">+ One-click replay</li>
+          <li class="pro">+ Real-time payload inspection</li>
+          <li class="pro">+ Signature verification built in</li>
+          <li class="pro">+ Free tier available</li>
+        </ul>
+      </div>
+    </div>
+
+    <h2>The Webhook Relay Approach</h2>
+    <p>Instead of tunneling traffic directly to your machine, a webhook relay captures webhooks in the cloud and lets you forward them to localhost on demand. Here's the workflow:</p>
+
+    <h3>Step 1: Create an Endpoint</h3>
+    <p>Sign up for HookRelay and create a new endpoint. You get a unique, permanent URL like:</p>
+    <pre><code>https://hookrelay.fly.dev/h/abc123xyz</code></pre>
+
+    <h3>Step 2: Configure Your Provider</h3>
+    <p>Point your webhook provider (Stripe, GitHub, Shopify, etc.) to your HookRelay endpoint URL. This is a one-time setup &mdash; the URL never changes.</p>
+
+    <h3>Step 3: Webhooks Are Captured Automatically</h3>
+    <p>Every webhook sent to your endpoint is captured with full details: headers, body, query parameters, timestamp, and source IP. You can inspect them in the HookRelay dashboard in real time via WebSocket.</p>
+
+    <h3>Step 4: Forward to Localhost</h3>
+    <p>When you're actively developing, enable forwarding to send captured webhooks to your local server:</p>
+    <pre><code># Webhooks sent to your HookRelay endpoint
+# are automatically forwarded to localhost:3000/webhook</code></pre>
+
+    <h3>Step 5: Replay as Needed</h3>
+    <p>Found a bug? Fixed it? Replay the same webhook with one click. No need to trigger a new event from the provider. You can replay the same webhook dozens of times as you iterate on your handler code.</p>
+
+    <h2>Real-World Example: Stripe Checkout</h2>
+    <p>Let's walk through a complete example of developing a Stripe Checkout integration using HookRelay.</p>
+
+    <h3>Set Up Your Handler</h3>
+    <pre><code>// server.js
+const express = require('express');
+const app = express();
+
+app.post('/webhook', express.raw({type: 'application/json'}), (req, res) => {
+  const event = JSON.parse(req.body);
+
+  switch (event.type) {
+    case 'checkout.session.completed':
+      const session = event.data.object;
+      console.log('Payment successful for:', session.customer_email);
+      // Fulfill the order
+      break;
+
+    case 'customer.subscription.updated':
+      console.log('Subscription updated:', event.data.object.id);
+      break;
+
+    default:
+      console.log('Unhandled event:', event.type);
+  }
+
+  res.json({ received: true });
+});
+
+app.listen(3000, () => console.log('Listening on :3000'));</code></pre>
+
+    <h3>Configure Stripe Webhook</h3>
+    <p>In the Stripe Dashboard, set your webhook endpoint to your HookRelay URL. Select the events you care about (e.g., <code>checkout.session.completed</code>).</p>
+
+    <h3>Trigger a Test Event</h3>
+    <p>Complete a test checkout in Stripe. The webhook is captured by HookRelay. You can see the full payload in the dashboard immediately:</p>
+    <pre><code>{
+  "id": "evt_1abc123",
+  "type": "checkout.session.completed",
+  "data": {
+    "object": {
+      "id": "cs_test_xyz",
+      "customer_email": "buyer@example.com",
+      "amount_total": 2900,
+      "currency": "usd",
+      "payment_status": "paid"
+    }
+  }
+}</code></pre>
+
+    <h3>Debug and Iterate</h3>
+    <p>Your handler has a bug? Fix it, restart your server, and replay the captured webhook. The same payload, the same headers &mdash; but this time it hits your updated code. Repeat until it works perfectly.</p>
+
+    <div class="callout">
+      <p><strong>No more "trigger another test payment."</strong> Every webhook you receive is saved and replayable. This alone saves hours during development.</p>
+    </div>
+
+    <h2>Why Not Just Use ngrok?</h2>
+    <p>ngrok is great for quick demos, but it has real limitations for webhook development:</p>
+
+    <ul>
+      <li><strong>URL instability:</strong> Free tier URLs change every time you restart ngrok. You have to update your webhook URL in every provider dashboard.</li>
+      <li><strong>No capture when offline:</strong> Close your laptop and ngrok goes down. Webhooks sent during that time are lost forever.</li>
+      <li><strong>No replay:</strong> ngrok forwards requests in real time. If your handler crashes, you have to trigger a new event from the provider.</li>
+      <li><strong>Rate limits:</strong> Free ngrok has connection limits that can cause webhook delivery failures during development.</li>
+      <li><strong>Cost:</strong> ngrok's paid plans that solve these problems start at $10/mo &mdash; and still don't include replay.</li>
+    </ul>
+
+    <h2>Other Services and Alternatives</h2>
+    <p>If you're evaluating webhook testing tools, here's a quick comparison:</p>
+    <ul>
+      <li><strong>webhook.site / RequestBin:</strong> Good for one-off inspection, but no forwarding to localhost and no replay. URLs are temporary.</li>
+      <li><strong>Stripe CLI:</strong> Stripe-specific. Great if you only use Stripe, but doesn't work with GitHub, Shopify, Twilio, or any other provider.</li>
+      <li><strong>LocalTunnel:</strong> Open source ngrok alternative, but even less reliable. URLs are random and the service goes down frequently.</li>
+      <li><strong>HookRelay:</strong> Purpose-built for webhook development. Permanent URLs, capture when offline, one-click replay, real-time inspection. Works with any provider.</li>
+    </ul>
+
+    <div class="cta-box">
+      <h3>Start testing webhooks the easy way</h3>
+      <p>Get a permanent webhook URL in 30 seconds. Free tier included.</p>
+      <a href="/auth/login" class="btn-cta">Create Free Account</a>
+    </div>
+
+  </div>
+</article>
+
+<footer>
+  <div class="container">
+    <p>&copy; 2026 HookRelay. <a href="/landing">Home</a> &middot; <a href="/landing#pricing">Pricing</a> &middot; <a href="/auth/login">Sign In</a></p>
+  </div>
+</footer>
+
+</body>
+</html>
