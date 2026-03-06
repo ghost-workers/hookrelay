@@ -1,0 +1,10 @@
+# ABOUTME: Docker build context exclusions.
+# ABOUTME: Prevents node_modules, db files, and git from being sent to Docker daemon.
+node_modules
+frontend/node_modules
+*.db
+*.db-wal
+*.db-shm
+.git
+dist
+frontend/dist
