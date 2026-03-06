@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HookRelay — Capture, Debug & Relay Webhooks</title>
+  <meta name="description" content="Inspect webhooks in real-time, replay failed deliveries, and relay to local dev. Free for solo developers.">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://hookrelay.fly.dev/">
+  <meta property="og:title" content="HookRelay — Capture, Debug & Relay Webhooks">
+  <meta property="og:description" content="Inspect webhooks in real-time, replay failed deliveries, and forward to localhost. Free for solo developers.">
+  <meta property="og:site_name" content="HookRelay">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="HookRelay — Capture, Debug & Relay Webhooks">
+  <meta name="twitter:description" content="Inspect webhooks in real-time, replay failed deliveries, and forward to localhost. Free for solo developers.">
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https://hookrelay.fly.dev/">
+
+  <!-- Additional SEO -->
+  <meta name="robots" content="index, follow">
+  <meta name="author" content="GHO">
+  <meta name="keywords" content="webhook, debugging, relay, inspect, replay, developer tools, API, HTTP">
+
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "HookRelay",
+    "url": "https://hookrelay.fly.dev",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Web",
+    "description": "Capture, inspect, debug, and replay webhooks in real-time. Forward them to localhost. Built for developers integrating third-party APIs.",
+    "offers": [
+      {
+        "@type": "Offer",
+        "name": "Free",
+        "price": "0",
+        "priceCurrency": "USD",
+        "description": "1 endpoint, 100 captures/day, 24-hour retention"
+      },
+      {
+        "@type": "Offer",
+        "name": "Pro",
+        "price": "29",
+        "priceCurrency": "USD",
+        "priceSpecification": {
+          "@type": "UnitPriceSpecification",
+          "billingDuration": "P1M"
+        },
+        "description": "10 endpoints, 10K captures/day, 30-day retention"
+      },
+      {
+        "@type": "Offer",
+        "name": "Team",
+        "price": "99",
+        "priceCurrency": "USD",
+        "priceSpecification": {
+          "@type": "UnitPriceSpecification",
+          "billingDuration": "P1M"
+        },
+        "description": "Unlimited endpoints, 100K captures/day, 90-day retention"
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    /* ABOUTME: Landing page styles for HookRelay marketing site. */
+    /* ABOUTME: Single-file static page with embedded CSS for zero-dependency deployment. */
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --border: #1e1e2e;
+      --text: #e4e4ef;
+      --text-muted: #8888a0;
+      --accent: #6c5ce7;
+      --accent-light: #a29bfe;
+      --green: #00cec9;
+      --orange: #fdcb6e;
+      --radius: 12px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--accent-light); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Nav */
+    nav {
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    nav .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .logo span { color: var(--accent-light); }
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      align-items: center;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+
+    /* Hero */
+    .hero {
+      padding: 100px 0 80px;
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      background: var(--surface);
+    }
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 24px;
+      letter-spacing: -0.02em;
+    }
+    .hero h1 .highlight {
+      background: linear-gradient(135deg, var(--accent-light), var(--green));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      font-size: 1.2rem;
+      color: var(--text-muted);
+      max-width: 580px;
+      margin: 0 auto 40px;
+    }
+    .hero-cta {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+    .btn-primary:hover {
+      background: var(--accent-light);
+      text-decoration: none;
+    }
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover {
+      border-color: var(--text-muted);
+      text-decoration: none;
+    }
+
+    /* Terminal mockup */
+    .terminal {
+      max-width: 700px;
+      margin: 60px auto 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      text-align: left;
+    }
+    .terminal-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .terminal-dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+    }
+    .terminal-dot.r { background: #ff5f57; }
+    .terminal-dot.y { background: #febc2e; }
+    .terminal-dot.g { background: #28c840; }
+    .terminal-code {
+      padding: 20px;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 0.85rem;
+      line-height: 1.8;
+      color: var(--text-muted);
+      overflow-x: auto;
+    }
+    .terminal-code .cmd { color: var(--green); }
+    .terminal-code .url { color: var(--accent-light); }
+    .terminal-code .status { color: var(--orange); }
+    .terminal-code .arrow { color: var(--text-muted); }
+
+    /* Features */
+    .features {
+      padding: 80px 0;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      transition: border-color 0.2s;
+    }
+    .feature-card:hover {
+      border-color: var(--accent);
+    }
+    .feature-icon {
+      font-size: 1.5rem;
+      margin-bottom: 16px;
+    }
+    .feature-card h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .feature-card p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* How it works */
+    .how-it-works {
+      padding: 80px 0;
+      border-top: 1px solid var(--border);
+    }
+    .section-title {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+    .section-title h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .section-title p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+    }
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 40px;
+      text-align: center;
+    }
+    .step-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      font-weight: 700;
+      font-size: 1.2rem;
+      margin-bottom: 16px;
+    }
+    .steps h3 {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+    .steps p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* Pricing */
+    .pricing {
+      padding: 80px 0;
+      border-top: 1px solid var(--border);
+    }
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .pricing-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 36px;
+      position: relative;
+    }
+    .pricing-card.featured {
+      border-color: var(--accent);
+    }
+    .pricing-card.featured::before {
+      content: 'Most Popular';
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--accent);
+      color: white;
+      padding: 4px 16px;
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .pricing-card h3 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .price {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+    .price-period {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-bottom: 24px;
+    }
+    .pricing-features {
+      list-style: none;
+      margin-bottom: 32px;
+    }
+    .pricing-features li {
+      padding: 8px 0;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .pricing-features li::before {
+      content: '';
+      display: inline-block;
+      width: 18px; height: 18px;
+      background: var(--green);
+      mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='3'%3E%3Cpath d='M5 13l4 4L19 7'/%3E%3C/svg%3E") no-repeat center;
+      -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='3'%3E%3Cpath d='M5 13l4 4L19 7'/%3E%3C/svg%3E") no-repeat center;
+      flex-shrink: 0;
+    }
+    .pricing-card .btn { width: 100%; justify-content: center; }
+
+    /* Waitlist / CTA */
+    .cta-section {
+      padding: 100px 0;
+      text-align: center;
+      border-top: 1px solid var(--border);
+    }
+    .cta-section h2 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    .cta-section p {
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      font-size: 1.1rem;
+    }
+    .waitlist-form {
+      display: flex;
+      gap: 12px;
+      max-width: 460px;
+      margin: 0 auto;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .waitlist-form input {
+      flex: 1;
+      min-width: 240px;
+      padding: 14px 18px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .waitlist-form input:focus { border-color: var(--accent); }
+    .waitlist-form input::placeholder { color: var(--text-muted); }
+
+    /* Footer */
+    footer {
+      padding: 40px 0;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero { padding: 60px 0 40px; }
+      .nav-links { gap: 20px; }
+      .pricing-grid { grid-template-columns: 1fr; max-width: 400px; }
+    }
+    @media (max-width: 480px) {
+      .nav-links { display: none; }
+      .hero h1 { font-size: 2rem; }
+      .waitlist-form { flex-direction: column; }
+      .waitlist-form input { min-width: unset; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="container">
+      <div class="logo">⚡ Hook<span>Relay</span></div>
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="/landing/blog/">Blog</a></li>
+        <li><a href="#waitlist" class="btn btn-primary" style="padding: 10px 20px; font-size: 0.85rem;">Get Started</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge">Now in Early Access</div>
+      <h1>
+        Stop guessing.<br>
+        <span class="highlight">See every webhook.</span>
+      </h1>
+      <p>Capture, inspect, debug, and replay webhooks in real-time. Forward them to localhost. Never miss a payload again.</p>
+      <div class="hero-cta">
+        <a href="#waitlist" class="btn btn-primary">Get Started Free</a>
+        <a href="#how" class="btn btn-secondary">See How It Works</a>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dot r"></div>
+          <div class="terminal-dot y"></div>
+          <div class="terminal-dot g"></div>
+        </div>
+        <div class="terminal-code">
+          <div><span class="arrow">$</span> <span class="cmd">curl</span> <span class="url">https://hook.hookrelay.dev/wh_k8x2m</span> \</div>
+          <div>&nbsp;&nbsp;-X POST -H "Content-Type: application/json" \</div>
+          <div>&nbsp;&nbsp;-d '{"event": "order.completed", "amount": 4999}'</div>
+          <div>&nbsp;</div>
+          <div><span class="status">200 OK</span> — captured in 12ms</div>
+          <div><span class="arrow">→</span> forwarded to <span class="url">localhost:3000/webhooks</span></div>
+          <div><span class="arrow">→</span> dashboard updated in real-time</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="features" id="features">
+    <div class="container">
+      <div class="section-title">
+        <h2>Built for developers who ship</h2>
+        <p>Everything you need to work with webhooks, nothing you don't.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">&#x1F50D;</div>
+          <h3>Real-Time Inspection</h3>
+          <p>See headers, body, and metadata the instant a webhook lands. WebSocket-powered live updates.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#x1F504;</div>
+          <h3>One-Click Replay</h3>
+          <p>Re-send any captured webhook to your endpoint. Debug edge cases without waiting for the provider to fire again.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#x1F310;</div>
+          <h3>Local Forwarding</h3>
+          <p>Route production webhooks straight to localhost. No ngrok, no tunnels, no config files.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#x1F512;</div>
+          <h3>Signature Verification</h3>
+          <p>Validate HMAC signatures from Stripe, GitHub, Shopify, and more. Know your payloads are authentic.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#x1F4CA;</div>
+          <h3>Delivery Analytics</h3>
+          <p>Track success rates, latency, and failure patterns. Spot issues before your users do.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#x1F91D;</div>
+          <h3>Team Sharing</h3>
+          <p>Share endpoints and captured payloads with your team. Everyone sees the same data.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="how-it-works" id="how">
+    <div class="container">
+      <div class="section-title">
+        <h2>Three steps. That's it.</h2>
+        <p>Get started in under a minute.</p>
+      </div>
+      <div class="steps">
+        <div>
+          <div class="step-number">1</div>
+          <h3>Create an endpoint</h3>
+          <p>Get a unique URL you can point any webhook provider at. Takes 5 seconds.</p>
+        </div>
+        <div>
+          <div class="step-number">2</div>
+          <h3>Send webhooks</h3>
+          <p>Point Stripe, GitHub, Shopify — whatever — at your HookRelay URL. We capture everything.</p>
+        </div>
+        <div>
+          <div class="step-number">3</div>
+          <h3>Inspect & forward</h3>
+          <p>See payloads in real-time, replay failures, and forward to your local dev server.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pricing" id="pricing">
+    <div class="container">
+      <div class="section-title">
+        <h2>Simple, transparent pricing</h2>
+        <p>Start free. Scale when you're ready.</p>
+      </div>
+      <div class="pricing-grid">
+
+        <div class="pricing-card">
+          <h3>Free</h3>
+          <div class="price">$0</div>
+          <div class="price-period">forever</div>
+          <ul class="pricing-features">
+            <li>1 endpoint</li>
+            <li>100 captures / month</li>
+            <li>24-hour retention</li>
+            <li>Real-time dashboard</li>
+            <li>Local forwarding</li>
+          </ul>
+          <a href="#waitlist" class="btn btn-secondary">Start Free</a>
+        </div>
+
+        <div class="pricing-card featured">
+          <h3>Pro</h3>
+          <div class="price">$29</div>
+          <div class="price-period">per month</div>
+          <ul class="pricing-features">
+            <li>10 endpoints</li>
+            <li>10,000 captures / month</li>
+            <li>30-day retention</li>
+            <li>Replay & forwarding</li>
+            <li>Signature verification</li>
+            <li>Delivery analytics</li>
+          </ul>
+          <a href="#waitlist" class="btn btn-primary">Get Started</a>
+        </div>
+
+        <div class="pricing-card">
+          <h3>Team</h3>
+          <div class="price">$99</div>
+          <div class="price-period">per month</div>
+          <ul class="pricing-features">
+            <li>Unlimited endpoints</li>
+            <li>100,000 captures / month</li>
+            <li>90-day retention</li>
+            <li>Team sharing & roles</li>
+            <li>Custom domains</li>
+            <li>Priority support</li>
+          </ul>
+          <a href="#waitlist" class="btn btn-secondary">Contact Us</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section" id="waitlist">
+    <div class="container">
+      <h2>Start debugging webhooks</h2>
+      <p>Enter your email to get started. Free tier, no credit card required.</p>
+      <form class="waitlist-form" id="signup-form">
+        <input type="email" name="email" placeholder="you@company.com" required autocomplete="email">
+        <button type="submit" class="btn btn-primary">Get Started Free</button>
+      </form>
+      <p id="form-message" style="margin-top: 16px; display: none;"></p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <p>&copy; 2026 HookRelay. Built by GHO.</p>
+    </div>
+  </footer>
+
+  <script>
+    // ABOUTME: Signup form that creates an account via the magic link auth flow.
+    // ABOUTME: Posts email to /auth/login, then redirects to the app dashboard.
+    document.getElementById('signup-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      var email = this.email.value;
+      var msg = document.getElementById('form-message');
+      var btn = this.querySelector('button');
+      btn.disabled = true;
+      btn.textContent = 'Setting up...';
+
+      fetch('/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.magicLink) {
+          window.location.href = data.magicLink;
+        } else if (data.error) {
+          msg.textContent = data.error;
+          msg.style.display = 'block';
+          msg.style.color = 'var(--orange)';
+          btn.disabled = false;
+          btn.textContent = 'Get Started Free';
+        }
+      })
+      .catch(function() {
+        msg.textContent = 'Something went wrong. Please try again.';
+        msg.style.display = 'block';
+        msg.style.color = 'var(--orange)';
+        btn.disabled = false;
+        btn.textContent = 'Get Started Free';
+      });
+    });
+  </script>
+
+</body>
+</html>

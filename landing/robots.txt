@@ -1,0 +1,7 @@
+# ABOUTME: Robots.txt for HookRelay landing page and blog.
+# ABOUTME: Allows all crawlers and points to sitemap for SEO indexing.
+
+User-agent: *
+Allow: /
+
+Sitemap: https://hookrelay.fly.dev/landing/sitemap.xml
